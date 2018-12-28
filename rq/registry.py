@@ -95,7 +95,7 @@ class StartedJobRegistry(BaseRegistry):
             failed_queue = FailedQueue(connection=self.connection,
                                        job_class=self.job_class)
 
-            with self.connection.pipeline() as pipeline:
+            with self.connection._pipeline() as pipeline:
                 for job_id in job_ids:
                     try:
                         job = self.job_class.fetch(job_id,

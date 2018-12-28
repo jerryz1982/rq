@@ -2,7 +2,7 @@ WORKERS_SUSPENDED = 'rq:suspended'
 
 
 def is_suspended(connection, worker=None):
-    with connection.pipeline() as pipeline:
+    with connection._pipeline() as pipeline:
         if worker is not None:
             worker.heartbeat(pipeline=pipeline)
         pipeline.exists(WORKERS_SUSPENDED)

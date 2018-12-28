@@ -19,7 +19,7 @@ try:
 except ImportError:
     from signal import SIGTERM as SIGKILL
 
-from redis import WatchError
+from redis import WatchError, ResponseError
 
 from . import worker_registration
 from .compat import PY2, as_text, string_types, text_type
@@ -773,6 +773,9 @@ class Worker(object):
                     break
                 except WatchError:
                     continue
+                # workaround forbid transaction in current server pool
+                except ResponseError:
+                    break
 
     def perform_job(self, job, queue):
         """Performs the actual work of a job.  Will/should only be called

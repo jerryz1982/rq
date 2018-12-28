@@ -37,7 +37,7 @@ def patch_connection(connection):
         connection._setex = partial(StrictRedis.setex, connection)
         connection._lrem = partial(StrictRedis.lrem, connection)
         connection._zadd = partial(StrictRedis.zadd, connection)
-        connection._pipeline = partial(StrictRedis.pipeline, connection)
+        connection._pipeline = partial(StrictRedis.pipeline, connection, transaction=False)
         connection._ttl = fix_return_type(partial(StrictRedis.ttl, connection))
         if hasattr(connection, 'pttl'):
             connection._pttl = fix_return_type(partial(StrictRedis.pttl, connection))
