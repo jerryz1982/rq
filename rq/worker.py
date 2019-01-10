@@ -747,35 +747,33 @@ class Worker(object):
                     pipeline.watch(job.dependents_key)
                     # enqueue_dependents calls multi() on the pipeline!
                     queue.enqueue_dependents(job, pipeline=pipeline)
-
-                    self.set_current_job_id(None, pipeline=pipeline)
-                    self.increment_successful_job_count(pipeline=pipeline)
-                    self.increment_total_working_time(
-                        job.ended_at - job.started_at, pipeline
-                    )
-
-                    result_ttl = job.get_result_ttl(self.default_result_ttl)
-                    if result_ttl != 0:
-                        job.set_status(JobStatus.FINISHED, pipeline=pipeline)
-                        # Don't clobber the user's meta dictionary!
-                        job.save(pipeline=pipeline, include_meta=False)
-
-                        finished_job_registry = FinishedJobRegistry(job.origin,
-                                                                    self.connection,
-                                                                    job_class=self.job_class)
-                        finished_job_registry.add(job, result_ttl, pipeline)
-
-                    job.cleanup(result_ttl, pipeline=pipeline,
-                                remove_from_queue=False)
-                    started_job_registry.remove(job, pipeline=pipeline)
-
-                    pipeline.execute()
-                    break
                 except WatchError:
                     continue
-                # workaround forbid transaction in current server pool
-                except ResponseError:
-                    break
+                except ResponseError as e:
+                    self.log.error('response error caught:{0}'.format(e))
+                self.set_current_job_id(None, pipeline=pipeline)
+                self.increment_successful_job_count(pipeline=pipeline)
+                self.increment_total_working_time(
+                    job.ended_at - job.started_at, pipeline
+                )
+
+                result_ttl = job.get_result_ttl(self.default_result_ttl)
+                if result_ttl != 0:
+                    job.set_status(JobStatus.FINISHED, pipeline=pipeline)
+                    # Don't clobber the user's meta dictionary!
+                    job.save(pipeline=pipeline, include_meta=False)
+
+                    finished_job_registry = FinishedJobRegistry(job.origin,
+                                                                self.connection,
+                                                                job_class=self.job_class)
+                    finished_job_registry.add(job, result_ttl, pipeline)
+
+                job.cleanup(result_ttl, pipeline=pipeline,
+                            remove_from_queue=False)
+                started_job_registry.remove(job, pipeline=pipeline)
+
+                pipeline.execute()
+                break
 
     def perform_job(self, job, queue):
         """Performs the actual work of a job.  Will/should only be called
