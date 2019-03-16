@@ -31,7 +31,8 @@ from .logutils import setup_loghandlers
 from .queue import Queue, get_failed_queue
 from .registry import FinishedJobRegistry, StartedJobRegistry, clean_registries
 from .suspension import is_suspended
-from .timeouts import JobTimeoutException, HorseMonitorTimeoutException, UnixSignalDeathPenalty
+from .timeouts import (JobTimeoutException, HorseMonitorTimeoutException,
+                       UnixSignalDeathPenalty, MonitorHorsePenalty)
 from .utils import (backend_class, ensure_list, enum,
                     make_colorizer, utcformat, utcnow, utcparse)
 from .version import VERSION
@@ -608,7 +609,8 @@ class Worker(object):
         """
         while True:
             try:
-                with UnixSignalDeathPenalty(self.job_monitoring_interval, HorseMonitorTimeoutException):
+                with MonitorHorsePenalty(self.job_monitoring_interval,
+                                         HorseMonitorTimeoutException):
                     retpid, ret_val = os.waitpid(self._horse_pid, 0)
                 break
             except HorseMonitorTimeoutException:

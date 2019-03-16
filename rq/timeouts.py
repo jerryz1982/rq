@@ -76,3 +76,14 @@ class UnixSignalDeathPenalty(BaseDeathPenalty):
         """
         signal.alarm(0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
+
+
+class MonitorHorsePenalty(UnixSignalDeathPenalty):
+
+    def setup_death_penalty(self):
+        """Sets up an alarm signal and a signal handler that raises
+        an exception after the monitor interval amount (expressed in seconds).
+        Do not need to be SIGALRM since it is for heartbeat.
+        """
+        signal.signal(signal.SIG_DFL, self.handle_death_penalty)
+        signal.alarm(self._timeout)
