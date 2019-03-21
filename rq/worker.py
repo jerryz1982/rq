@@ -607,7 +607,7 @@ class Worker(object):
         either executes successfully or the status of the job is set to
         failed
         """
-        monitor_interval = max(self.job_monitor_interval,
+        monitor_interval = max(self.job_monitoring_interval,
                                int(job.timeout / 3))
         while True:
             try:
