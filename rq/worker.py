@@ -545,8 +545,8 @@ class Worker(object):
         connection = pipeline if pipeline is not None else self.connection
         connection.expire(self.key, timeout)
         connection.hset(self.key, 'last_heartbeat', utcformat(utcnow()))
-        self.log.debug('Sent heartbeat to prevent worker timeout. '
-                       'Next one should arrive within %s seconds.', timeout)
+        self.log.info('Sent heartbeat to prevent worker timeout. '
+                      'Next one should arrive within %s seconds.', timeout)
 
     def refresh(self):
         data = self.connection.hmget(
